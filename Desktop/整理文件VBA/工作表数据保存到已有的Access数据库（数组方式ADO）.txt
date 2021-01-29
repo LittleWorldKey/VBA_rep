@@ -1,0 +1,61 @@
+引用：microsoft activex data objects 2.x library
+  Public Sub5_8()
+    Dim myData As String, myTable As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim myDataArrary As Variant
+    Dim cnn As ADODB.Connection
+    Dim rs As ADODB.Recordset
+    Set wb = ThisWorkbook      ‘指定工作簿
+    Set ws = wb.Sheets("总公司")    ‘指定工作表名称
+    myData = wb.Path & "\myData.mdb"    ‘指定新数据库名称（完整路径）
+myTable = "总公司销售记录"      ‘指定数据库的数据表名称
+‘获取工作表数据
+    With ws.Cells(1, 1).CurrentRegion
+        myDataArray = .Value
+End With
+‘建立与数据库的连接
+    Set cnn = New ADODB.Connection
+    With cnn
+        .Provider = "microsoft.jet.oledb.4.0"
+        .Open myData
+End With
+‘---下面开始向数据表中添加工作表的数据
+‘获取要保存的记录数（行数）
+    n = ws.Range("A65536").End(xlUp).Row
+For i = 2 To n
+    ‘查询是否已经存在了某条记录
+        Sql = "select * from " & myTable _
+        & " where 日期=#" & Format(ws.Cells(i, 1).Value, "yyyy-mm-dd") & "#" _
+        & " and 商品名称='" & Cells(i, 2).Value & "'" _
+        & " and 规格='" & Cells(i, 3).Value & "'" _
+        & " and 单价=" & Cells(i, 4).Value _
+        & " and 销售量=" & Cells(i, 5).Value
+        Set rs = New ADODB.Recordset
+        rs.Open Sql, cnn, adOpenKeyset, adLockOptimistic
+        If rs.RecordCount = 0 Then
+            ‘如果数据表中没有工作表的某行数据，就添加到数据表
+            rs.AddNew
+            For j = 1 To rs.Fields.Count
+                rs.Fields(j - 1) = myDataArray(i, j)
+            Next j
+            rs.Update
+        Else
+            ‘如果数据表中有工作表的某行数据，就将数据进行更新
+            For j = 1 To rs.Fields.Count
+                rs.Fields(j - 1) = myDataArray(i, j)
+            Next j
+            rs.Update
+        End If
+    Next i
+MsgBox "数据保存完毕！", vbInformation + vbOKOnly
+‘关闭数据库及查询数据集
+    rs.Close
+cnn.Close
+‘释放变量
+    Set wb = Nothing
+    Set ws = Nothing
+    Set rs = Nothing
+    Set cnn = Nothing
+End Sub
+
