@@ -1,0 +1,101 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'---------------- mdlSetNewTable ----------------
+Sub SetNewTable()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strTable, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strTable
+        cnADO.Execute strSQL
+    End If
+    strSQL = "CREATE TABLE " & strTable _
+        & "(?工?号 long not null primary key," _
+        & "姓名 text(20) not null,性? text(1) not null," _
+        & "民族 text(20) not null,部? text(20) not null," _
+        & "?? text(20),?? text(20),学? text(20)," _
+        & "出生日期 date not null,籍? text(20)," _
+        & "?? longtext,照片 longbinary)"
+    cnADO.Execute strSQL
+    MsgBox "?建数据表成功！" & vbCrLf _
+         & "数据表名称?：" & strTable, , "?建数据表"
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub SetNewWorksheet()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim strTable As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\??工作簿.xlsx"
+    If Dir(strPath) <> "" Then Kill strPath
+    cnADO.Open "Provider=Microsoft.Ace.Oledb.12.0;" _
+        & "Extended Properties=Excel 12.0 Xml;" _
+        & "Data Source=" & strPath
+    strTable = "?明"
+    strSQL = "CREATE TABLE  " & strTable & "(?明 text)"
+    cnADO.Execute strSQL
+    strTable = "?工档案"
+    strSQL = "CREATE TABLE  " & strTable _
+        & " ( ?工?号 long,姓名 text,性? text," _
+        & "民族 text,部? text,?? text,?? text," _
+        & "学? text,出生日期 date,籍? text,?? text)"
+    cnADO.Execute strSQL
+    MsgBox "?建文件成功！" & vbCrLf _
+        & "工作簿文件名?：" & strPath & vbCrLf _
+        & "保存位置：" & ThisWorkbook.Path
+    cnADO.Close
+    Set cnADO = Nothing
+End Sub
+
+Sub DeleteDatatable()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strTable, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strTable
+        cnADO.Execute strSQL
+        MsgBox "已??除数据表。", vbInformation, "?除数据表"
+    Else
+        MsgBox "数据表不存在。", vbInformation, "?除数据表"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+

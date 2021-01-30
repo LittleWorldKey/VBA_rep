@@ -1,0 +1,40 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'----------------- mdlCreateView -----------------
+Sub CreateView()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim strPath As String
+    Dim strViewName As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strViewName = "当月生日"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strViewName, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strViewName
+        cnADO.Execute strSQL
+    End If
+    strSQL = "CREATE VIEW " & strViewName _
+        & " AS SELECT * FROM ?工档案 " _
+        & "Where Month(出生日期)= Month(Now)"
+    cnADO.Execute strSQL
+    MsgBox "???建成功！", , "?建??"
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+

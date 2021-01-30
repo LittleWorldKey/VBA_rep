@@ -1,0 +1,160 @@
+
+
+'------------- mdlCreateNewDataTable -------------
+Sub CreateNewDataTable() '将工作表生成新数据表
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strTable, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strTable
+        cnADO.Execute strSQL
+    End If
+    strSQL = "SELECT * INTO " & strTable _
+        & " FROM [Excel 12.0;Database=" _
+        & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$]"
+    cnADO.Execute strSQL
+    MsgBox "已?将工作表数据生成新数据表。", vbInformation, "生成新数据表"
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub CreateNewDatatable_1() '将??生成新数据表
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strTable, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strTable
+        cnADO.Execute strSQL
+    End If
+    strSQL = "SELECT * FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$] WHERE 籍? LIKE '%北京%'"
+    strSQL = "SELECT * INTO " & strTable & " FROM (" & strSQL & ")"
+    cnADO.Execute strSQL
+    MsgBox "已?将??数据生成新数据表。", vbInformation, "生成新数据表"
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub CreateNewDatatable_2() '将工作表生成新数据表，?接工作簿
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT * INTO [MS Access;pwd=;Database=" & strPath & ";]." & strTable & " FROM [" & ActiveSheet.Name & "$]"
+    cnADO.Execute strSQL
+    MsgBox "已?将工作表数据生成新数据表。", vbInformation, "生成新数据表"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub CreateNewWorksheet() '将数据表生成新的工作表
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?出工作簿.xlsx"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" _
+        & ThisWorkbook.Path & "\?工管理.accdb"
+    If Dir(strPath) <> "" Then Kill strPath
+    strSQL = "SELECT * INTO [Excel 12.0 Xml;Database=" _
+        & strPath & ";].Sheet1 FROM " & strTable
+    cnADO.Execute strSQL
+    MsgBox "?建文件成功！" & vbCrLf _
+        & "工作簿文件名?：" & strPath & vbCrLf _
+        & "保存位置：" & ThisWorkbook.Path
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub CreateNewWorksheet_1() '数据表?出工作表，?接本工作簿
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?出工作簿.xlsx"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Extended Properties=Excel 12.0 Xml;Data Source=" & ThisWorkbook.FullName
+    If Dir(strPath) <> "" Then Kill strPath
+    strSQL = "SELECT * INTO [" & strPath & ";].Sheet1 FROM [MS Access;pwd=;Database=" & ThisWorkbook.Path & "\?工管理.accdb;]." & strTable
+    cnADO.Execute strSQL
+    MsgBox "?建文件成功！" & vbCrLf & "工作簿文件名?：" & strPath & vbCrLf & "保存位置：" & ThisWorkbook.Path
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub DeleteDatatable() '?除数据表
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "??表"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20, Array(Empty, Empty, strTable, Empty))
+    If Not rsADO.EOF Then
+        strSQL = "DROP TABLE " & strTable
+        cnADO.Execute strSQL
+        MsgBox "已??除数据表。", vbInformation, "?除数据表"
+    Else
+        MsgBox "数据表不存在。", vbInformation, "?除数据表"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+

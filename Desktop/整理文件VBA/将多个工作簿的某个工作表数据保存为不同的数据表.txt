@@ -1,0 +1,66 @@
+ Public Sub5_5()
+    Dim myData As String
+    Dim mypsss As String, n As Integer, p As Integer, i As Long, DefaultPath As String
+    Dim i1 As Integer, i2 As Integer
+    Dim myAccess As Access.Application
+    ‘----开始从指定的文件夹中寻找要汇总的工作簿文件
+    DefaultPath = ThisWorkbook.Path & "\销售数据\"
+    myPath = InputBox("请输入要查询工作簿的文件夹完整目录及名字：" _
+         & vbCrLf & vbCrLf & "如果为空，则默认为" & vbCrLf _
+         & DefaultPath, "输入路径", DefaultPath)
+    If myPath = "" Then myPath = DefaultPath
+    Application.StatusBar = "正在查找汇总工作簿......"
+    Set fs = Application.FileSearch
+    With fs
+        .LookIn = myPath
+        .FileType = msoFileTypeExcelWorkbooks
+        If .Execute(SortBy:=msoSortByFileName, _
+                SortOrder:=msoSortOrderAscending) > 0 Then
+            p = .FoundFiles.Count
+            MsgBox "在此文件夹中共有 " & p & " 个工作表的数据文件需要汇总！", _
+            vbInformation, "搜索到汇总文件"
+            ReDim myfile(p) As String, myname(p) As String
+            For n = 1 To p
+                ‘获取工作簿文件名
+                myfile(n) = .FoundFiles(n)
+                ‘获取工作簿的基础名称
+                myname(n) = .FoundFiles(n)
+                i1 = InStrRev(myname(n), "\")
+                i2 = InStrRev(myname(n), ".")
+                myname(n) = Mid(myname(n), i1 + 1, i2 - i1 - 1)
+            Next n
+        Else
+            MsgBox "没有搜索到要汇总的文件！", vbInformation, "没有汇总文件"
+            Application.StatusBar = False
+            Exit Sub
+        End If
+    End With
+    ‘指定数据库文件名称和路径
+    myData = ThisWorkbook.Path & "\TotalData.mdb"
+    ‘删除已经存在的同名数据库文件
+    On Error Resume Next
+    Kill myData
+    On Error GoTo 0
+    ‘建立新数据库文件
+    Application.StatusBar = "正在创建数据库......"
+    Set myAccess = New Access.Application
+    myAccess.NewCurrentDatabase myData
+    ‘将搜索到的工作簿数据导入Access数据库
+    Application.StatusBar = "正在将工作簿数据汇总到数据库......"
+    For n = 1 To p
+        myAccess.DoCmd.TransferSpreadsheet acImport, 8, myname(n), myfile(n), True, ""
+    Next n
+    MsgBox "工作簿数据导入数据库成功！" & vbCrLf _
+        & "数据库名为 " & myData, vbInformation, "导入数据"
+    ‘关闭数据库
+myAccess.CloseCurrentDatabase
+‘释放变量
+    Set myAccess = Nothing
+    Set fs = Nothing
+    Application.DisplayAlerts = True
+    Application.StatusBar = False
+End Sub
+
+    ·分析：
+在程序中，采用了字符串处理的方法来获取每个工作薄基础名，即利用InStrRev函数分别获取符号”\”和”.”的最后出现位置（从工作簿完整名称字符串的左边算起），然后再利用mid函数获取工作簿的基础名称。
+     例：假设工作薄的完整名称字符串为“C:\my documents\book1.xls”,那么符号”\” 的最后出现位置为instrrev(“c:\my documents\book1.xls”,”\”)=16,符号”.”的最后出现位置为instrrev(“c:\my documents\book1.xls”,”.”)=22，从而工作簿的基础名称为mid(“c:\my documents\book1.xls”,16+1,22-16-1),即“book1”.

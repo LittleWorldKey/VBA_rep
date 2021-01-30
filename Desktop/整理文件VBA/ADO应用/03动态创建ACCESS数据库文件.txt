@@ -1,0 +1,75 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'---------------- mdlsetDatabase ----------------
+Sub SetDatabase()
+    Dim catADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set catADO = CreateObject("ADOX.Catalog")
+    strPath = ThisWorkbook.Path & "\??数据?.accdb"
+    strTable = "?工档案"
+    If Dir(strPath) <> "" Then Kill strPath
+    On Error GoTo ErrMsg
+    catADO.Create "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "CREATE TABLE " & strTable _
+        & "(?工?号 long not null primary key," _
+        & "姓名 text(20) not null," _
+        & "性? text(1) not null," _
+        & "民族 text(20) not null," _
+        & "部? text(20) not null," _
+        & "?? text(20),?? text(20)," _
+        & "学? text(20),出生日期 date not null," _
+        & "籍? text(20),?? longtext,照片 longbinary)"
+    catADO.ActiveConnection.Execute strSQL
+    MsgBox "?建数据?成功！" & vbCrLf _
+         & "数据?文件名?：" & strPath & vbCrLf _
+         & "数据表名称?：" & strTable & vbCrLf _
+         & "保存位置：" & ThisWorkbook.Path, _
+         vbOKOnly + vbInformation, "?建数据?"
+    Set catADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub SetDatabasePassWord()
+    Dim catADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set catADO = CreateObject("ADOX.Catalog")
+    strPath = ThisWorkbook.Path & "\??数据?.accdb"
+    strTable = "?工档案"
+    If Dir(strPath) <> "" Then Kill strPath
+    On Error GoTo ErrMsg
+    catADO.Create "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath _
+        & ";Jet OLEDB:Database Password=123456;"
+    strSQL = "CREATE TABLE " & strTable _
+        & "(?工?号 long not null primary key," _
+        & "姓名 text(20) not null," _
+        & "性? text(1) not null," _
+        & "民族 text(20) not null," _
+        & "部? text(20) not null," _
+        & "?? text(20),?? text(20)," _
+        & "学? text(20),出生日期 date not null," _
+        & "籍? text(20),?? longtext,照片 longbinary)"
+    catADO.ActiveConnection.Execute strSQL
+    MsgBox "?建数据?成功！" & vbCrLf _
+         & "数据?文件名?：" & strPath & vbCrLf _
+         & "数据表名称?：" & strTable & vbCrLf _
+         & "保存位置：" & ThisWorkbook.Path, _
+         vbOKOnly + vbInformation, "?建数据?"
+    Set catADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+

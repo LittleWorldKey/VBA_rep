@@ -1,0 +1,46 @@
+'メインの処理
+Sub Main()
+  Dim resultMessage As String
+  resultMessage = Test
+ 
+  If resultMessage <> "" Then
+    MsgBox resultMessage, vbCritical
+  Else
+    MsgBox "処理成功", vbInformation
+  End If
+ 
+End Sub
+ 
+ 
+'「実行時エラー 1004」が発生するエラーサンプル
+Function Test() As String
+On Error GoTo Test_Err
+  Test = ""
+ 
+  Worksheets("Sheet1").Active
+  Worksheets("Sheet2").Range("A1").Select
+ 
+  Exit Function
+ 
+Test_Err:
+  'エラー時にエラー情報を返す
+  Test = "【処理エラー】" & vbCrLf & _
+         "エラー番号：" & Err.Number & vbCrLf & _
+         "エラーメッセージ：" & Err.Description
+ 
+End Function
+
+
+'参照設定名 地址的?找
+Sub Test2()
+    Dim refObj As Object
+    For Each refObj In ThisWorkbook.VBProject.References
+    With refObj
+        Debug.Print _
+        "名称：" & .Name & vbCrLf & _
+        "参照設定名：" & .Description & vbCrLf & _
+        "フルパス：" & .FullPath & vbCrLf & _
+        "------------------------"
+    End With
+    Next refObj
+End Sub

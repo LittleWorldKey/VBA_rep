@@ -1,0 +1,39 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'------------ mdlDeleteAddModifyFields ------------
+Sub DeleteAddModifyFields()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\??数据?.accdb"
+    strTable = "?工档案"
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    On Error Resume Next
+    strSQL = "ALTER TABLE " & strTable & " DROP ?子?箱,工作??"
+    cnADO.Execute strSQL
+    On Error GoTo ErrMsg
+    strSQL = "ALTER TABLE " & strTable & " ADD ?子?箱 TEXT(10),工作?? DOUBLE"
+    cnADO.Execute strSQL
+    MsgBox "字段添加成功。", vbInformation, "提示"
+    strSQL = "ALTER TABLE " & strTable & " ALTER 工作?? DATETIME"
+    cnADO.Execute strSQL
+    MsgBox "字段数据?型修改成功。", vbInformation, "提示"
+    strSQL = "ALTER TABLE " & strTable & " ALTER ?子?箱 TEXT(50)"
+    cnADO.Execute strSQL
+    MsgBox "字段?度修改成功。", vbInformation, "提示"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+

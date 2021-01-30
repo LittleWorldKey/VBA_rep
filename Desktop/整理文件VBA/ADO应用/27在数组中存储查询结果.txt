@@ -1,0 +1,87 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'-------------- mdlRecordsetToArray --------------
+Sub RecordsetToArray()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim avntData() As Variant
+    Dim avntTitle() As Variant
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT * FROM ?工档案"
+    rsADO.Open strSQL, cnADO, 1, 3
+    avntTitle = Array("?工?号", "姓名", "性?", "学?")
+    rsADO.Filter = "学?='大?'"
+    avntData = rsADO.GetRows(-1, 1, avntTitle)
+    Cells.ClearContents
+    Range("a1:d1") = avntTitle
+    Range("a2").Resize(UBound(avntData, 2) + 1, UBound(avntData, 1) + 1) = Application.Transpose(avntData)
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub RecordsetToArray1()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim avntData() As Variant     '  定?数?
+    Dim avntTitle() As Variant
+    Dim avntResult As Variant
+    Dim i As Long
+    Dim j As Long
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    ?接ACCESS用到--> ThisWorkbook.Path 
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    
+    
+    strSQL = "SELECT * FROM ?工档案"
+    rsADO.Open strSQL, cnADO, 1, 3
+    avntTitle = Array("?工?号", "姓名", "性?", "学?")
+    .Filter ??掉 “学?” 的?? 
+    rsADO.Filter = "学?='大?'"
+    avntData = rsADO.GetRows(-1, 1, avntTitle)
+    
+    'Ubound(ColumnNames，2 ) 取数?第二?上限
+    'VBA二?数???的方法Arr = [{"a","b"; "e","f" ;"i","j";"m" ,"n"}] 
+    'Arr = Range(Sheets("文本1").Range("a1"), Sheets("文本1"). Range("a" & Cells(65536, 1).End(xlUp).Row))
+    '?明：????方法如上，一个是?予固定?，?一个是将某区域内数?全部?入 数?从1?始?数
+    
+    ReDim avntResult(1 To UBound(avntData, 2) + 1, 1 To UBound(avntData) + 1)
+    For i = 0 To UBound(avntData, 2)
+        For j = 0 To UBound(avntData)
+            avntResult(i + 1, j + 1) = avntData(j, i)
+        Next j
+    Next i
+    Cells.ClearContents
+    Range("a1:d1") = avntTitle
+    Range("a2").Resize(UBound(avntResult), UBound(avntResult, 2)).Value = Application.Transpose(avntData)
+    
+    
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+

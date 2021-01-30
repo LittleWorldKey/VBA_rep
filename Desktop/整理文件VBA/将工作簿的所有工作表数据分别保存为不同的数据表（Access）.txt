@@ -1,0 +1,34 @@
+ Public Sub5_3()
+‘Access2003までのAccessデータベースファイル
+    Dim myData As String, myTable As String
+    Dim myFile As String, myRange As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim myAccess As Access.Application
+    Set wb = ThisWorkbook     ‘指定工作簿
+    myFile = wb.FullName      ‘指定工作簿名称（完整路径）
+    myData = wb.Path & "\NewData.mdb"    ‘指定新数据库名称（完整路径）
+    ‘删除已经存在的同名数据库文件
+    On Error Resume Next
+    Kill myData
+    On Error GoTo 0
+    ‘引用access对象
+    Set myAccess = New Access.Application
+    ‘创建新数据库文件
+    myAccess.NewCurrentDatabase myData
+    ‘循环各个工作表，并保存数据
+    For Each ws In wb.Worksheets
+        myTable = ws.Name    ‘指定数据库的各个数据表名称
+        ‘指定工作表数据区域字符串 Address(False, False)行与列 相対参照
+        myRange = ws.Name & "!" & ws.UsedRange.Address(False, False)
+        ‘将各个工作表数据导入Access数据库
+        myAccess.DoCmd.TransferSpreadsheet acImport, 8, myTable, myFile, True, myRange
+    Next
+    MsgBox "工作簿的各个工作表数据已成功保存到数据库！", vbOKOnly
+    ‘关闭数据库
+myAccess.CloseCurrentDatabase
+    ‘释放变量
+Set myAccess = Nothing
+    Set wb = Nothing
+    Set ws = Nothing
+End Sub

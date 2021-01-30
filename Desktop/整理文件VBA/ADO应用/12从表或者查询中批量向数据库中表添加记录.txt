@@ -1,0 +1,148 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'----------------- mdlAddRecords -----------------
+Sub AddRecords()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "DELETE FROM " & strTable & " A WHERE EXISTS(" _
+        & "SELECT * FROM [Excel 12.0;Database=" & _
+        ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+        & Range("a1").CurrentRegion.Address(0, 0) & "] " _
+        & "WHERE ?工?号=A.?工?号)"
+    cnADO.Execute strSQL
+    strSQL = "INSERT INTO " & strTable _
+        & "(?工?号,姓名,性?,民族,部?,??," _
+        & "??,学?,出生日期,籍?,??) " _
+        & "SELECT ?工?号,姓名,性?,民族,部?,??," _
+        & "??,学?,出生日期,籍?,?? " _
+        & "FROM [Excel 12.0;Database=" _
+        & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "]"
+    cnADO.Execute strSQL
+    MsgBox "??添加成功。", vbInformation, "添加??"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub AddRecords_1() '从??中向数据表添加??
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strSQL = "DELETE FROM " & strTable & " A WHERE EXISTS(SELECT * FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$] WHERE 性?='男' AND ?工?号=A.?工?号)"
+    cnADO.Execute strSQL
+    strSQL = "INSERT INTO " & strTable & " SELECT * FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$] WHERE 性?='男'"
+    cnADO.Execute strSQL
+    MsgBox "??添加成功。", vbInformation, "添加??"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub AddRecords_2() '从数据表中向数据表添加??
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strSQL = "DELETE FROM " & strTable & " A WHERE EXISTS(SELECT * FROM ??表 WHERE 性?='女' AND ?工?号=A.?工?号)"
+    cnADO.Execute strSQL
+    strSQL = "INSERT INTO " & strTable & " SELECT * FROM ??表 WHERE 性?='女'"
+    cnADO.Execute strSQL
+    MsgBox "??添加成功。", vbInformation, "添加??"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub UpdateaddRecords() '更新数据?已?存在??，插入不存在??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strTemp As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Dim avntFields As Variant
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    
+'    生成更新SQL?句(?注意Office2007后需要加IMEX=0参数)
+    strSQL = "SELECT B.?工?号 FROM " & strTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "] B WHERE A.?工?号=B.?工?号"
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        avntFields = Range("A1:K1") '工作表中的字段名写入数?
+    '    生成更新字符串，如：a.姓名=b.姓名,a.性?=b.性?,……
+        For i = 2 To UBound(avntFields, 2)
+            strTemp = strTemp & ",a." & avntFields(1, i) & "=b." & avntFields(1, i)
+        Next i
+        strSQL = "UPDATE " & strTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+            & Range("A1").CurrentRegion.Address(0, 0) & "] B SET " & Mid(strTemp, 2) & " WHERE A.?工?号=B.?工?号"
+        cnADO.Execute strSQL
+        strMsg = rsADO.RecordCount & "条??已更新！"
+    End If
+    If rsADO.RecordCount < Range("A" & Rows.Count).End(xlUp).Row - 1 Then
+    '    生成数据?不存在??的SQL?句
+        strSQL = " SELECT A.* FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" & Range("A1").CurrentRegion.Address(0, 0) _
+            & "] A LEFT JOIN " & strTable & " B ON A.?工?号=B.?工?号 WHERE B.?工?号 IS NULL"
+        Set rsADO = CreateObject("ADODB.Recordset")
+        rsADO.Open strSQL, cnADO, 1, 3
+    
+        '插入数据?不存在??
+        If rsADO.RecordCount > 0 Then '如果工作表中含有数据?不存在??
+            strSQL = "INSERT INTO " & strTable & strSQL
+            cnADO.Execute strSQL
+            strMsg = strMsg & vbCrLf & rsADO.RecordCount & "条??已添加到数据?！"
+        End If
+    End If
+    MsgBox strMsg, vbInformation, "提示"
+
+'    ???接?放内存
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+
+
+
+

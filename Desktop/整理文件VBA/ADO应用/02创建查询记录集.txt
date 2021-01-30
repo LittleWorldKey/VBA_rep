@@ -1,0 +1,66 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'-------------- mdlCreateRecordSet --------------
+Sub CreateQueryRS()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim i As Integer
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.RecordSet")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT * FROM ?çHûÉàƒ WHERE ïî?='?åˆé∫'"
+    rsADO.Open strSQL, cnADO, 1, 3
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+Sub CreateQueryExecute()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim i As Integer
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    Set cnADO = CreateObject("ADODB.Connection")
+    On Error GoTo ErrMsg
+    With cnADO
+        .Provider = "Microsoft.ACE.OLEDB.12.0"
+        .ConnectionTimeout = 100
+        .Open strPath
+    End With
+    strSQL = "SELECT * FROM ?çHûÉàƒ WHERE ïî?='?åˆé∫'"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+

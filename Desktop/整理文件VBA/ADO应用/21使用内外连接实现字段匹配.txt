@@ -1,0 +1,97 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'------------------ mdlSQLJoin ------------------
+Sub ADOLeftJoin()
+    Dim objCN As Object
+    Dim objRS As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim i As Long
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    Set objRS = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT a.?çH?çÜ, a.ê©ñº AS ê©ñºA, a.ê´?, " _
+            & "b.ê©ñº AS ê©ñºB,b.?ã‡? From " _
+            & "?çHûÉàƒ AS a LEFT JOIN [MS Access;Pwd=;Database=" _
+            & ThisWorkbook.Path & "\?ã‡.accdb;].?ã‡ñº? AS b " _
+            & "ON a.?çH?çÜ = b.?çH?çÜ"
+    objRS.Open strSQL, objCN, 1, 3
+    For i = 1 To objRS.Fields.Count
+        Cells(1, i) = objRS.Fields(i - 1).Name
+    Next
+    Range("a2").CopyFromRecordset objRS
+    objRS.Close
+    objCN.Close
+    Set objRS = Nothing
+    Set objCN = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub ADORightJoin()
+    Dim objCN As Object
+    Dim objRS As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim i As Long
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    Set objRS = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT a.?çH?çÜ, a.ê©ñº AS ê©ñºA, a.ê´?, b.ê©ñº AS ê©ñºB,b.?ã‡? FROM " _
+        & "?çHûÉàƒ AS a RIGHT  JOIN [MS Access;Pwd=;Database=" & ThisWorkbook.Path _
+        & "\?ã‡.accdb;].?ã‡ñº? AS b ON a.?çH?çÜ = b.?çH?çÜ"
+    objRS.Open strSQL, objCN, 1, 3
+    For i = 1 To objRS.Fields.Count
+        Cells(1, i + 6) = objRS.Fields(i - 1).Name
+    Next
+    Range("g2").CopyFromRecordset objRS
+    objRS.Close
+    objCN.Close
+    Set objRS = Nothing
+    Set objCN = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub ADOInnerJoin()
+    Dim objCN As Object
+    Dim objRS As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Dim i As Long
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    Set objRS = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+     strSQL = "SELECT a.?çH?çÜ, a.ê©ñº AS ê©ñºA, a.ê´?, b.ê©ñº AS ê©ñºB,b.?ã‡? FROM  " _
+        & "?çHûÉàƒ AS a INNER JOIN [MS Access;Pwd=;Database=" & ThisWorkbook.Path _
+        & "\?ã‡.accdb;].?ã‡ñº? AS b ON a.?çH?çÜ = b.?çH?çÜ"
+    objRS.Open strSQL, objCN, 1, 3
+    For i = 1 To objRS.Fields.Count
+        Cells(1, i + 12) = objRS.Fields(i - 1).Name
+    Next
+    Range("M2").CopyFromRecordset objRS
+    objRS.Close
+    objCN.Close
+    Set objRS = Nothing
+    Set objCN = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+
+

@@ -1,0 +1,39 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'-------------- mdlDistinctRecords --------------
+Sub DistinctRecord()
+    Dim cnADO As Object
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+        
+ '  cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=excel 12.0;Data Source=" & ThisWorkbook.FullName 
+    strSQL = "SELECT DISTINCT 籍? FROM [?工档案$]"
+    Cells.ClearContents
+    Range("A1") = "籍?"
+    Range("A2").CopyFromRecordset cnADO.Execute(strSQL)
+    cnADO.Close
+    Set cnADO = Nothing
+End Sub
+Sub DistinctRecordFields()
+    Dim cnADO As Object
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT DISTINCT 部?,籍? FROM [?工档案$]"
+    Cells.ClearContents
+    Range("A1:B1") = Array("部?", "籍?")
+    Range("A2").CopyFromRecordset cnADO.Execute(strSQL)
+    cnADO.Close
+    Set cnADO = Nothing
+End Sub
+

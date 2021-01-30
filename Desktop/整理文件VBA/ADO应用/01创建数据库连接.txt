@@ -1,0 +1,55 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA 经典代码应用大全》        --
+'--     ExceHome 编著出版 ISBN:9787301300954    --
+'--                  图书示例                   --
+'-------------------------------------------------
+
+'-------------- mdlCreateConnection --------------
+Sub CreateConnection()
+    Dim cnADO As New ADODB.Connection
+    Dim strPath As String
+    strPath = ThisWorkbook.Path & "\员工管理.accdb"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    If cnADO.State = adStateOpen Then
+        MsgBox "数据库连接成功！" & vbCrLf & _
+            vbCrLf & "ADO版本为：" & cnADO.Version & vbCrLf & _
+            vbCrLf & "Connection对象提供者名称：" & cnADO.Provider
+        cnADO.Close
+        Set cnADO = Nothing
+    Else
+        MsgBox "数据库连接失败！"
+    End If
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "错误报告"
+End Sub
+
+
+Sub CreateConnectionQuery()
+    Dim cnADO As Object
+    Dim strPath As String
+    strPath = ThisWorkbook.Path & "\员工管理.accdb"
+    Set cnADO = CreateObject("ADODB.Connection")
+    On Error GoTo ErrMsg
+    With cnADO
+        .Provider = "Microsoft.ACE.OLEDB.12.0"
+        .ConnectionTimeout = 100
+        .Open strPath
+    End With
+    If cnADO.State = 1 Then
+        MsgBox "数据库连接成功！" & vbCrLf & _
+            vbCrLf & "ADO版本为：" & cnADO.Version & vbCrLf & _
+            vbCrLf & "Connection对象提供者名称：" & cnADO.Provider
+        cnADO.Close
+        Set cnADO = Nothing
+    Else
+        MsgBox "数据库连接失败！", vbInformation, "连接数据库"
+    End If
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "错误报告"
+End Sub
+
+

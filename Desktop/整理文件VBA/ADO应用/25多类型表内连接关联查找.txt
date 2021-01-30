@@ -1,0 +1,69 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'------------- mdlInternalLinksQuery -------------
+Sub InternalLinksQuery()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strTempTable As String
+    Dim strBonusTable As String
+    Dim strBonusTempTable As String
+    Dim strDonationsTable As String
+    Dim strSQL1 As String
+    Dim strSQL2 As String
+    Dim strSQL As String
+    Dim i As Long
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strTable = "?çHûÉàƒ"
+    strTempTable = "[Excel 12.0;Database=" & ThisWorkbook.Path _
+        & "\?„Ÿêl?ûÉàƒ.xlsx;].[?„Ÿêl?ûÉàƒ$]"
+    strBonusTable = "[MS Access;pwd=;Database=" _
+        & ThisWorkbook.Path & "\?ã‡.accdb;].?ã‡ñº?"
+    strBonusTempTable = "[Excel 12.0;Database=" _
+        & ThisWorkbook.Path _
+        & "\?„Ÿêl??ã‡.xlsx;].[?„Ÿêl??ã‡$]"
+    strDonationsTable = "[Text;HDR=YES;Database=" _
+        & ThisWorkbook.Path & "\;].[ùoäº.txt]"
+    strSQL1 = "SELECT ?çH?çÜ AS ?çÜ,ê©ñº,ê´?," _
+        & "'?çH' AS êl??? FROM " & strTable _
+        & "  UNION ALL SELECT ?çÜ,ê©ñº,ê´?," _
+        & "'?„Ÿêl?' AS êl??? FROM " & strTempTable & ""
+    strSQL2 = "SELECT ?çH?çÜ AS ?çÜ,ê©ñº,?ã‡?,0 AS ùoäº " _
+        & "FROM " & strBonusTable _
+        & " UNION ALL SELECT ?çÜ,ê©ñº,?ã‡?,0 AS ùoäº FROM " _
+        & strBonusTempTable _
+        & " UNION ALL SELECT ?çÜ,ê©ñº,0 AS ?ã‡?,ùoäº FROM " _
+        & strDonationsTable
+    strSQL = "SELECT A.?çÜ,A.ê©ñº,A.ê´?,A.êl???," _
+        & "IIF(SUM(B.?ã‡?)=0,NULL,SUM(B.?ã‡?)) AS ?ã‡?," _
+        & "IIF(SUM(ùoäº)=0,NULL,SUM(ùoäº)) AS ùoäº FROM (" _
+        & strSQL1 & ") A Inner Join (" & strSQL2 & ") B " _
+        & "ON A.?çÜ=B.?çÜ  GROUP BY A.?çÜ,A.ê©ñº,A.ê´?,A.êl???"
+    rsADO.Open strSQL, cnADO, 1, 3
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+
+

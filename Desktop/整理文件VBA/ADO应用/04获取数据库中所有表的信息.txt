@@ -1,0 +1,181 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'------------------ mdlgetTables ------------------
+Sub CatGetTables()
+    Dim catADO As Object
+    Dim objTable As Object
+    Dim strPath As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set catADO = CreateObject("ADOX.Catalog")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    catADO.ActiveConnection = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Cells.ClearContents
+    Cells(1, 1) = "êîêòï\ñº"
+    Cells(1, 2) = "?å^"
+    i = 1
+    For Each objTable In catADO.Tables
+        i = i + 1
+        Cells(i, 1) = objTable.Name
+        Cells(i, 2) = objTable.Type
+    Next objTable
+    Set objTable = Nothing
+    Set catADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub SchemGetTables()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Cells(2, 1).CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+Sub GetTablesSchemaLikeCat()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    Set rsADO = cnADO.OpenSchema(20)
+    Cells.ClearContents
+    Cells(1, 1) = "êîêòï\ñº"
+    Cells(1, 2) = "?å^"
+    i = 1
+    Do Until rsADO.EOF
+        i = i + 1
+        Cells(i, 1) = rsADO.Fields("TABLE_NAME")
+        Cells(i, 2) = rsADO.Fields("TABLE_TYPE")
+        rsADO.MoveNext
+    Loop
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+
+
+'---------------- mdlGetWorkSheets ----------------
+Sub SchemaGetWorkSheets()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strMsg As String
+    Dim strShtName As String
+    Dim i As Integer
+    Dim j As Integer
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    With cnADO
+        .Provider = "Microsoft.ACE.OLEDB.12.0"
+        .ConnectionString = "Extended Properties=Excel 12.0;Data Source=" & ThisWorkbook.FullName
+        .CursorLocation = 3
+        .Open
+    End With
+    Set rsADO = cnADO.OpenSchema(20)
+    For i = 1 To rsADO.RecordCount
+        strShtName = Replace(rsADO("TABLE_NAME").Value, "'", "")
+        If Right(strShtName, 1) = "$" Then
+            j = j + 1
+            strMsg = strMsg & vbCrLf & Left(strShtName, Len(strShtName) - 1)
+        End If
+        rsADO.MoveNext
+    Next i
+    MsgBox "ñ{çHçÏïÎíÜóL" & j & "ò¢çHçÏï\ÅCî@â∫ÅF" & strMsg
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+End Sub
+
+Sub CatGetWorkSheets()
+    Dim catADO As Object
+    Dim objTable As Object
+    Dim strMsg As String
+    Dim strPath As String
+    Dim strShtName As String
+    Dim i As Integer
+    Set catADO = CreateObject("ADOX.Catalog")
+    strPath = ThisWorkbook.FullName
+    catADO.ActiveConnection = "Provider=Microsoft.ACE.OLEDB.12.0;" & _
+        "Extended Properties=Excel 12.0;Data Source=" & strPath
+    For Each objTable In catADO.Tables
+        If objTable.Type = "TABLE" Then
+           strShtName = Replace(objTable.Name, "'", "")
+           If Right(strShtName, 1) = "$" Then
+               strMsg = strMsg & vbCrLf & Left(strShtName, Len(strShtName) - 1)
+               i = i + 1
+           End If
+        End If
+    Next objTable
+    MsgBox "ñ{çHçÏïÎíÜóL" & i & "ò¢çHçÏï\ÅCî@â∫ÅF" & strMsg
+    Set catADO = Nothing
+    Set objTable = Nothing
+End Sub
+
+
+
+
+'----------------- mdlTableExist -----------------
+Sub DetermineTableExist()
+    Dim cnADO As Object
+    Dim strPath As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    If cnADO.OpenSchema(20, Array(Empty, Empty, "?çHûÉàƒ", Empty)).EOF Then
+        MsgBox "[?çHûÉàƒ] ï\" & "ïsë∂ç›"
+    Else
+        MsgBox "[?çHûÉàƒ] ï\" & "õﬂë∂ç›"
+    End If
+End Sub
+
+Sub DetermineWorkSheetExist()
+    Dim cnADO As Object
+    Dim strPath As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.FullName
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & strPath
+    If cnADO.OpenSchema(20, Array(Empty, Empty, "ç›ôe?çH$", Empty)).EOF Then
+        MsgBox "Ågç›ôe?çHÅhï\" & "ïsë∂ç›"
+    Else
+        MsgBox "Ågç›ôe?çHÅhï\" & "õﬂë∂ç›"
+    End If
+    cnADO.Close
+    Set cnADO = Nothing
+End Sub
+

@@ -1,0 +1,53 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'----------------- mdlTopRecords -----------------
+Sub TopRecords()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT TOP 10 学号,姓名,班?,?分 FROM [成?$] " _
+        & "ORDER BY ?分 DESC"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set cnADO = Nothing
+    Set rsADO = Nothing
+End Sub
+
+Sub TopRecords2()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT TOP 10 学号,姓名,班?,?分 FROM [成?$] ORDER BY ?分 DESC,班? DESC"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set cnADO = Nothing
+    Set rsADO = Nothing
+End Sub
+

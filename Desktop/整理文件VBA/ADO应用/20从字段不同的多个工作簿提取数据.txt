@@ -1,0 +1,209 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'-------------- mdlMultipleWorkbook --------------
+Sub MultipleWorkbook()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL1 As String
+    Dim strSQL2 As String
+    Dim strSQL3 As String
+    Dim strSQL As String
+    Dim strPath As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\çH?ï\\"
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & strPath & "?åˆé∫.xlsx"
+    strSQL1 = "SELECT '?åˆé∫' AS ïî?,ê©ñº,ê´?," _
+        & "äÓ?çH?,?à çH?,åﬂé`?,0 AS ñÏäO?? FROM [ç›ôe?çH$]"
+    strSQL2 = "SELECT '?åˆé∫' AS ïî?,ê©ñº,ê´?," _
+        & "0 AS äÓ?çH?,?à çH?,åﬂé`?,0 AS ñÏäO?? FROM [?„Ÿêl?$]"
+    strSQL3 = "SELECT 'çHíˆïî' AS ïî?,ê©ñº,ê´?," _
+        & "äÓ?çH?,?à çH?,åﬂé`?,ñÏäO?? " _
+        & "FROM [Excel 12.0;Database=" _
+        & strPath & "\çHíˆïî.xlsx;].[çHíˆêl?$]"
+    strSQL = strSQL1 & " UNION ALL " & strSQL2 _
+        & " UNION ALL " & strSQL3
+    strSQL = strSQL & " ORDER BY ïî?"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub MultipleWorkbook_1()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim rsADO2 As Object
+    Dim strSQL As String
+    Dim i As Integer
+    Dim j As Integer
+    Dim intCount As Integer
+    Dim astrPath() As String
+    Dim avntFields As Variant
+    Dim strTemp As String
+    Dim strTmp As String
+    Dim strPath As String
+    Dim strFields As String
+    Dim strFileName As String
+    Dim strShtName As String
+    On Error GoTo ErrMsg
+    strFields = "ïî?"
+    strPath = ThisWorkbook.Path & "\çH?ï\\"
+    strFileName = Dir(strPath & "*.xlsx")
+    Do While strFileName <> ""
+        Set cnADO = CreateObject("ADODB.Connection")
+        cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & strPath & strFileName
+        Set rsADO = cnADO.OpenSchema(20)
+        Do Until rsADO.EOF
+            If rsADO.Fields("TABLE_TYPE") = "TABLE" Then
+                strShtName = Replace(rsADO("TABLE_NAME").Value, "'", "")
+                If Right(strShtName, 1) = "$" Then
+                    Set rsADO2 = cnADO.Execute("[" & strShtName & "]")
+                    strTemp = ""
+                    For i = 0 To rsADO2.Fields.Count - 1
+                        strTmp = rsADO2.Fields(i).Name
+                        If InStr("," & strFields & ",", "," & strTmp & ",") = 0 Then
+                            strFields = strFields & "," & strTmp
+                        End If
+                        strTemp = strTemp & "," & strTmp
+                    Next i
+                    intCount = intCount + 1
+                    ReDim Preserve astrPath(1 To 2, 1 To intCount)
+                    astrPath(1, intCount) = strFileName & ";].[" & strShtName & "]"
+                    astrPath(2, intCount) = strTemp & ","
+                End If
+            End If
+            rsADO.MoveNext
+        Loop
+        strFileName = Dir
+    Loop
+    avntFields = Split(strFields, ",")
+    For i = 1 To intCount
+        strTemp = astrPath(2, i)
+        strTmp = ""
+        For j = 1 To UBound(avntFields)
+            If InStr(strTemp, "," & avntFields(j) & ",") Then
+                strTmp = strTmp & "," & avntFields(j)
+            Else
+                strTmp = strTmp & ",0 as " & avntFields(j)
+            End If
+        Next j
+        strSQL = strSQL & " UNION ALL SELECT '" _
+            & Split(astrPath(1, i), ".xlsx")(0) & "' AS ïî?" & strTmp _
+            & " FROM [Excel 12.0;Database=" & strPath & astrPath(1, i)
+    Next i
+    strSQL = Mid(strSQL, 12) & " ORDER BY ïî?"
+    Cells.ClearContents
+    avntFields = Split(strFields, ",")
+    Range("a1").Resize(, UBound(avntFields) + 1) = avntFields
+    Range("a2").CopyFromRecordset cnADO.Execute(strSQL)
+    rsADO.Close
+    rsADO2.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set rsADO2 = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub MultipleWorkbook_2()
+    Dim objDIC As Object
+    Dim objFso As Object
+    Dim objFile As Object
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim rsADO2 As Object
+    Dim strSQL As String
+    Dim i As Integer
+    Dim j As Integer
+    Dim intCount As Integer
+    Dim astrPath() As String
+    Dim avntKeys As Variant
+    Dim strTemp As String
+    Dim strTmp As String
+    Dim strPath As String
+    Dim strShtName As String
+    On Error GoTo ErrMsg
+    Set objFso = CreateObject("Scripting.FileSystemObject")
+    Set objDIC = CreateObject("scripting.dictionary")
+    strPath = ThisWorkbook.Path & "\çH?ï\\"
+    For Each objFile In objFso.GetFolder(strPath).Files
+        If objFile.Name Like "*.xlsx" Then
+            Set cnADO = CreateObject("ADODB.Connection")
+            cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & objFile
+            Set rsADO = cnADO.OpenSchema(20)
+            Do Until rsADO.EOF
+                If rsADO.Fields("TABLE_TYPE") = "TABLE" Then
+                    strShtName = Replace(rsADO("TABLE_NAME").Value, "'", "")
+                    If Right(strShtName, 1) = "$" Then
+                        Set rsADO2 = cnADO.Execute("[" & strShtName & "]")
+                        strTemp = ""
+                        For i = 0 To rsADO2.Fields.Count - 1
+                            strTmp = rsADO2.Fields(i).Name
+                            If Not objDIC.Exists(strTmp) Then objDIC(strTmp) = ""
+                            strTemp = strTemp & "," & strTmp
+                        Next i
+                        intCount = intCount + 1
+                        ReDim Preserve astrPath(1 To 2, 1 To intCount)
+                        astrPath(1, intCount) = objFile.Name & ";].[" & strShtName & "]"
+                        astrPath(2, intCount) = strTemp & ","
+                    End If
+                End If
+                rsADO.MoveNext
+            Loop
+        End If
+    Next
+    avntKeys = objDIC.Keys
+    For i = 1 To intCount
+        strTemp = astrPath(2, i)
+        strTmp = ""
+        For j = 0 To objDIC.Count - 1
+            If InStr(strTemp, "," & avntKeys(j) & ",") Then
+                strTmp = strTmp & "," & avntKeys(j)
+            Else
+                strTmp = strTmp & ",0 as " & avntKeys(j)
+            End If
+        Next j
+        strSQL = strSQL & " UNION ALL SELECT '" _
+            & Split(astrPath(1, i), ".xlsx")(0) & "' AS ïî?" & strTmp _
+            & " FROM [Excel 12.0;Database=" & strPath & astrPath(1, i)
+    Next i
+    strSQL = Mid(strSQL, 12) & " ORDER BY ïî?"
+    Cells.ClearContents
+    Range("a1") = "ïî?"
+    Range("b1").Resize(, objDIC.Count) = objDIC.Keys
+    Range("a2").CopyFromRecordset cnADO.Execute(strSQL)
+    Set objFile = Nothing
+    Set objFso = Nothing
+    rsADO.Close
+    rsADO2.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set rsADO2 = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+

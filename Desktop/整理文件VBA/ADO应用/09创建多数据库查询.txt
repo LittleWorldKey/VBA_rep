@@ -1,0 +1,49 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'---------------- mdlDatabaseQuery ----------------
+Sub MultipleDatabaseQuery()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT 人数 FROM  [Excel 12.0;Database=" _
+        & ThisWorkbook.FullName & ";].[学???$A1:A" _
+        & Range("A" & Rows.Count).End(xlUp).Row & "] A" _
+        & " LEFT JOIN (SELECT 学?,COUNT(学?) AS 人数" _
+        & " FROM ?工档案 GROUP BY 学?) B ON A.学?=B.学?"
+    Range("B2").CopyFromRecordset cnADO.Execute(strSQL)
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub MultipleDatabaseQueryExcel()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strSQL As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT 人数 FROM  [学???$A1:A" & Range("A" & Rows.Count).End(xlUp).Row _
+        & "] A LEFT JOIN (SELECT 学?,COUNT(学?) AS 人数 FROM [MS Access;pwd=;Database=" & strPath & ";].?工档案 GROUP BY 学?) B ON A.学?=B.学?"
+    Range("B2").CopyFromRecordset cnADO.Execute(strSQL)
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+

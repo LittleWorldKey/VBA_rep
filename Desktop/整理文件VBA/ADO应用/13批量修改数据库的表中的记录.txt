@@ -1,0 +1,68 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       sExcel VBA ?“T‘ã??—p‘å‘St        --
+'--     ExceHome ?’˜o”Å ISBN:9787301300954    --
+'--                  ??¦—á                   --
+'-------------------------------------------------
+
+'---------------- mdlUpdateRecords ----------------
+Sub UpdateRecords()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strField As String
+    Dim strSQL As String
+    Dim avntField As Variant
+    Dim i As Integer
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?HŠÇ—.accdb"
+    strTable = "?HƒˆÄ"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    avntField = Range("A1:K1").Value
+    For i = 2 To UBound(avntField, 2)
+        strField = strField & ",A." & avntField(1, i) & "=B." & avntField(1, i)
+    Next i
+    strSQL = "UPDATE " & strTable & " A,[Excel 12.0;Imex=0;Database=" _
+        & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "] B " _
+        & "SET " & Mid(strField, 2) & " WHERE A.?H?†=B.?H?†"
+    cnADO.Execute strSQL
+    MsgBox "”˜C‰ü¬Œ÷B", vbInformation, "”˜C‰ü"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???"
+End Sub
+
+Sub UpdateRecords_1()
+    Dim cnADO As New ADODB.Connection
+    Dim strPath As String
+    Dim strTable As String
+    Dim strField As String
+    Dim strSQL As String
+    Dim avntField As Variant
+    Dim i As Integer
+    strPath = ThisWorkbook.Path & "\?HŠÇ—.accdb"
+    strTable = "?HƒˆÄ"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "UPDATE " & strTable & " SET Šw?='‘å?' WHERE Šw?='‚’†' OR Šw?='’†?' OR Šw?='‰’†'"
+    cnADO.Execute strSQL
+    MsgBox "”˜C‰ü¬Œ÷B", vbInformation, "”˜C‰ü"
+    cnADO.Close
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???"
+End Sub
+
+
+
+
+
+
+
+
+

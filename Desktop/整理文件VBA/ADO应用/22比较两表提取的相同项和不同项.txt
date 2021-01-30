@@ -1,0 +1,137 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'--------------- mdlDifferenTitems ---------------
+Sub SameTitemsDifferenTitems()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Integer
+    Dim strPath As String
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.FullName
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & strPath
+    strSQL = "SELECT A.* FROM [Sheet1$] A,[Sheet2$] B " _
+            & "WHERE A.?çH?çÜ=B.?çH?çÜ"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    Range("A1") = "?ï\ëäìØ?"
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A3").CopyFromRecordset rsADO
+    strSQL = "SELECT A.* FROM [Sheet1$] A LEFT JOIN [Sheet2$] B " _
+            & "ON A.?çH?çÜ=B.?çH?çÜ WHERE B.?çH?çÜ IS NULL"
+    Range("G1") = "Sheet1ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 7) = rsADO.Fields(i).Name
+    Next i
+    Range("G3").CopyFromRecordset rsADO
+    strSQL = "SELECT A.* FROM [Sheet2$] A LEFT JOIN [Sheet1$] B " _
+            & "ON A.?çH?çÜ=B.?çH?çÜ WHERE B.?çH?çÜ IS NULL"
+    Range("M1") = "Sheet2ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 13) = rsADO.Fields(i).Name
+    Next i
+    Range("M3").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub SameTitemsDifferenTitems_1() 'IN,NOT IN
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Integer
+    Dim strPath As String
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.FullName
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & strPath
+    strSQL = "SELECT * FROM [Sheet1$] WHERE ?çH?çÜ IN (SELECT ?çH?çÜ FROM [Sheet2$])"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    Range("A1") = "?ï\ëäìØ?"
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A3").CopyFromRecordset rsADO
+    strSQL = "SELECT * FROM [Sheet1$] WHERE ?çH?çÜ NOT IN (SELECT ?çH?çÜ FROM [Sheet2$])"
+    Range("G1") = "Sheet1ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 7) = rsADO.Fields(i).Name
+    Next i
+    Range("G3").CopyFromRecordset rsADO
+    strSQL = "SELECT * FROM [Sheet2$] WHERE ?çH?çÜ NOT IN (SELECT ?çH?çÜ FROM [Sheet1$])"
+    Range("M1") = "Sheet2ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 13) = rsADO.Fields(i).Name
+    Next i
+    Range("M3").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub SameTitemsDifferenTitems_2() 'EXISTS,NOT EXISTS
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Integer
+    Dim strPath As String
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.FullName
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Extended Properties=Excel 12.0;Data Source=" & strPath
+    strSQL = "SELECT * FROM [Sheet1$] A WHERE EXISTS(SELECT * FROM [Sheet2$] WHERE ?çH?çÜ=A.?çH?çÜ)"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    Range("A1") = "?ï\ëäìØ?"
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A3").CopyFromRecordset rsADO
+    strSQL = "SELECT * FROM [Sheet1$] A WHERE NOT EXISTS(SELECT * FROM [Sheet2$] WHERE ?çH?çÜ=A.?çH?çÜ)"
+    Range("G1") = "Sheet1ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 7) = rsADO.Fields(i).Name
+    Next i
+    Range("G3").CopyFromRecordset rsADO
+    strSQL = "SELECT * FROM [Sheet2$] A WHERE NOT EXISTS(SELECT * FROM [Sheet1$] WHERE ?çH?çÜ=A.?çH?çÜ)"
+    Range("M1") = "Sheet2ì∆óL?"
+    Set rsADO = cnADO.Execute(strSQL)
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(2, i + 13) = rsADO.Fields(i).Name
+    Next
+    Range("M3").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+

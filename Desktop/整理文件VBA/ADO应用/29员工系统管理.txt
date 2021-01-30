@@ -1,0 +1,681 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'------------------ ThisWorkbook ------------------
+Private Sub Workbook_Open()
+    If Dir(ThisWorkbook.Path & "\?çHä«óù.accdb") = "" Then Call CreateDatabase
+End Sub
+'---------------- mdlStaffSystem ----------------
+Public gcnADO As ADODB.Connection
+Public grsADO As ADODB.Recordset
+Public gstrTable As String
+
+Sub TheStaffManagesSystem()
+    frmStaffingSystem.Show
+End Sub
+
+Sub TheStaffPicManages()
+    frmStaffingPhotoSystem.Show
+End Sub
+
+Sub CreateDatabase()
+    Dim catADO As New ADOX.Catalog
+    Dim strPath As String
+    Dim strSQL As String
+    strPath = ThisWorkbook.Path & "\?çHä«óù1.accdb"
+    gstrTable = "?çHûÉàƒ"
+    On Error GoTo ErrMsg
+    catADO.Create "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "CREATE TABLE " & gstrTable _
+        & "(?çH?çÜ int not null primary key," _
+        & "ê©ñº text(20) not null, ê´? text(1) not null," _
+        & "ñØë∞ text(20) not null,ïî? text(20) not null," _
+        & "?? text(20),?? text(20),äw? text(20)," _
+        & "èoê∂ì˙ä˙ date not null,ê–? text(20),?? text,è∆ï– image)"
+        catADO.ActiveConnection.Execute strSQL
+    Set catADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+Sub UpdateaddRecords()
+    Dim cnADO As New ADODB.Connection
+    Dim rsADO As New ADODB.Recordset
+    Dim strPath As String
+    Dim strTemp As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Dim avntFields As Variant
+    Dim i As Long
+    Worksheets("êîêò?").Select
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    gstrTable = "?çHûÉàƒ"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT B.?çH?çÜ FROM " & gstrTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "] B WHERE A.?çH?çÜ=B.?çH?çÜ"
+    Set rsADO = New ADODB.Recordset
+    rsADO.Open strSQL, cnADO, adOpenKeyset, adLockOptimistic
+    If rsADO.RecordCount > 0 Then
+        avntFields = Range("A1:K1")
+        For i = 2 To UBound(avntFields, 2)
+            strTemp = strTemp & ",a." & avntFields(1, i) & "=b." & avntFields(1, i)
+        Next i
+        strSQL = "UPDATE " & gstrTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+            & Range("A1").CurrentRegion.Address(0, 0) & "] B SET " & Mid(strTemp, 2) & " WHERE A.?çH?çÜ=B.?çH?çÜ"
+        cnADO.Execute strSQL
+        strMsg = rsADO.RecordCount & "è??õﬂçXêVÅI"
+    End If
+    If rsADO.RecordCount < Range("A" & Rows.Count).End(xlUp).Row - 1 Then
+        strSQL = " SELECT A.* FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" & Range("A1").CurrentRegion.Address(0, 0) _
+            & "] A LEFT JOIN " & gstrTable & " B ON A.?çH?çÜ=B.?çH?çÜ WHERE B.?çH?çÜ IS NULL"
+        Set rsADO = New ADODB.Recordset
+        rsADO.Open strSQL, cnADO, adOpenKeyset, adLockOptimistic
+        If rsADO.RecordCount > 0 Then
+            strSQL = "INSERT INTO " & gstrTable & strSQL
+            cnADO.Execute strSQL
+            strMsg = strMsg & vbCrLf & rsADO.RecordCount & "è??õﬂìYâ¡ìûêîêò?ÅI"
+        End If
+    End If
+    MsgBox strMsg, vbInformation, "íÒé¶"
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+
+
+'--------------- frmStaffingSystem ---------------
+Private Sub chkQueryExactOrNo_Click() 'ñÕå–??
+    If chkQueryExactOrNo.Value Then
+        lblResume.Visible = True
+        txtResume.Visible = True
+    Else
+        lblResume.Visible = False
+        txtResume.Visible = False
+    End If
+End Sub
+
+
+Private Sub txtSex_Change() 'ê´??ì¸å¿êß
+    If txtSex.Text = "" Then Exit Sub
+    If txtSex.Text <> "íj" And txtSex.Text <> "èó" Then
+        MsgBox "?ì¸??ÅC??ì¸íjÅCàΩé“èó"
+         With txtSex
+               .SelStart = 0
+               .SelLength = .TextLength
+        End With
+    End If
+End Sub
+
+Private Sub cmdQuery_Click() '??
+    Dim strSQL As String
+    Dim i As Long
+    Dim strText As String
+    Dim avntTitle As Variant
+    On Error GoTo ErrMsg
+    avntTitle = Array("txtNum", "txtName", "txtSex", _
+        "txtNation", "txtSection", "txtDuty", "txtPhone", "txtEducation")
+    If chkQueryExactOrNo.Value Then
+        For i = 0 To 7
+            If Len(Me.Controls(avntTitle(i)).Text) Then
+                strText = strText _
+                    & " AND " & grsADO.Fields(i).Name _
+                    & " LIKE '%" & Me.Controls(avntTitle(i)).Text & "%'"
+            End If
+        Next i
+        If Len(txtBirthPlace.Text) Then
+            strText = strText _
+                & " AND " & grsADO.Fields(9).Name _
+                & " LIKE '%" & txtBirthPlace.Text & "%'"
+        End If
+        If Len(txtResume.Text) Then
+            strText = strText _
+                & " AND " & grsADO.Fields(10).Name _
+                & " LIKE '%" & txtResume.Text & "%'"
+        End If
+    Else
+        For i = 0 To 7
+            If Len(Me.Controls(avntTitle(i)).Text) Then
+                If i = 0 Then
+                    strText = strText _
+                        & " AND " & grsADO.Fields(i).Name & "=" _
+                        & Me.Controls(avntTitle(i)).Text
+                Else
+                    strText = strText _
+                        & " AND " & grsADO.Fields(i).Name & "='" _
+                        & Me.Controls(avntTitle(i)).Text & "'"
+                End If
+            End If
+        Next i
+        If Len(txtBirthPlace.Text) Then
+            strText = strText _
+            & " AND " & grsADO.Fields(9).Name & "='" _
+            & txtBirthPlace.Text & "'"
+        End If
+    End If
+    If IsDate(txtStarDate.Text) Then
+        strText = strText _
+            & " AND " & grsADO.Fields(8).Name & ">=#" _
+            & txtStarDate.Text & "#"
+    End If
+    If IsDate(txtEndDate.Text) Then
+        strText = strText _
+            & " AND " & grsADO.Fields(8).Name & "<=#" _
+            & txtEndDate.Text & "#"
+    End If
+    If Len(strText) = 0 Then Exit Sub
+    strSQL = "SELECT ?çH?çÜ,ê©ñº,ê´?, ñØë∞," _
+        & "ïî?,??,??,äw?,èoê∂ì˙ä˙,ê–?,?? FROM " _
+        & gstrTable & " WHERE" & Mid(strText, 5)
+    Call ShowData(strSQL)
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Private Sub cmdDeleteRecord_Click() '?èú??
+    Dim rsNewADO As New ADODB.Recordset
+    Dim i As Integer
+    Dim lngNum As Long
+    Dim strSQL As String
+    Dim strYesOrNo As String
+    If lstData.ListIndex <= 0 Then Exit Sub
+    On Error GoTo ErrMsg
+    strSQL = "SELECT * FROM " & gstrTable _
+        & " WHERE ?çH?çÜ=" & lstData.Value
+    rsNewADO.Open strSQL, gcnADO, adOpenKeyset, adLockOptimistic
+    If rsNewADO.RecordCount > 0 Then
+        strYesOrNo = MsgBox("??óv?èú???ÅH", vbYesNo + vbExclamation, "?èú??")
+        If strYesOrNo = vbYes Then
+            strSQL = "DELETE FROM " & gstrTable _
+                & " WHERE ?çH?çÜ=" & lstData.Value
+            gcnADO.Execute strSQL
+            With lstData
+                lngNum = .ListIndex
+                If lngNum > 0 Then
+                    If .List(lngNum, 0) = lstData.Value Then
+                        .RemoveItem lngNum
+                    End If
+                End If
+            End With
+            MsgBox "õﬂè´???ò∏êîêò?íÜ?èúÅI", vbInformation, "?èú??"
+        End If
+    Else
+        MsgBox "ñvóL?ìû???ÅI", vbInformation, "?èú??"
+    End If
+    rsNewADO.Close
+    Set rsNewADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+Private Sub cmdExportData_Click() 'êîêò?èo
+    Dim avntData As Variant
+    If lstData.ListCount = 0 Then Exit Sub
+    Application.ScreenUpdating = False
+    On Error GoTo ErrMsg
+    avntData = lstData.List
+    With Workbooks.Add(xlWBATWorksheet).ActiveSheet
+        .Range("A1").Resize(UBound(avntData) + 1, UBound(avntData, 2) + 1) = avntData
+        With .Range("A1").Resize(1, UBound(avntData, 2) + 1)
+            .Font.Bold = True
+            .EntireColumn.AutoFit
+            .HorizontalAlignment = xlCenter
+        End With
+        .Columns("K:K").ColumnWidth = 55
+        .Range("A1").CurrentRegion.RowHeight = 17.25
+    End With
+    Application.ScreenUpdating = True
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+
+Private Sub UserForm_Initialize()
+    Dim strSQL As String
+    Dim strPath As String
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    gstrTable = "?çHûÉàƒ"
+    Set gcnADO = New ADODB.Connection
+    gcnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT ?çH?çÜ,ê©ñº,ê´?,ñØë∞,ïî?,??," _
+        & "??,äw?,èoê∂ì˙ä˙,ê–?,?? FROM " & gstrTable
+    With Me.lstData
+        .RowSource = ""
+        .ColumnCount = 11
+        .ColumnWidths = "46.8;37.2;27.6;27.6;56.4;" _
+            & "46.8;51.6;27.6;57.6;37.2;151.8"
+    End With
+    Call ShowData(strSQL)
+End Sub
+
+
+
+Public Sub ShowData(strSQL As String) '?é¶êîêò
+    Dim i As Long
+    Dim j As Long
+    Dim avntData As Variant
+    Dim avntResult() As Variant
+    On Error GoTo ErrMsg
+    lstData.Clear
+    Set grsADO = New ADODB.Recordset
+    grsADO.Open strSQL, gcnADO, adOpenKeyset, adLockOptimistic
+    If grsADO.RecordCount > 0 Then
+        avntData = grsADO.GetRows
+        On Error Resume Next
+        ReDim avntResult(-1 To UBound(avntData, 2), 0 To UBound(avntData))
+        For j = 0 To 10
+            avntResult(-1, j) = grsADO.Fields(j).Name
+        Next j
+        For i = 0 To UBound(avntData, 2)
+            For j = 0 To UBound(avntData)
+                avntResult(i, j) = avntData(j, i)
+            Next j
+        Next i
+        lstData.List = avntResult
+        lblMsg.Caption = "ã§?ìû " & grsADO.RecordCount & " è??"
+        On Error GoTo 0
+        grsADO.MoveFirst
+    End If
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer) 'ëﬁèo‚xëÃ??ï˙ì‡ë∂
+    On Error Resume Next
+    grsADO.Close
+    gcnADO.Close
+    Set grsADO = Nothing
+    Set gcnADO = Nothing
+End Sub
+
+Private Sub cmdCancel_Click() 'ëﬁèo‚xëÃ
+    Unload Me
+End Sub
+
+
+Private Sub cmdModifyorAddRecord_Click() 'èCâ¸àΩìYâ¡
+    Dim i As Long
+    Dim j As Long
+    Dim avntTxtName As Variant
+    If lstData.ListIndex > 0 Then
+        avntTxtName = Array("txtNum", "txtName", "txtSex", _
+            "txtNation", "txtSection", "txtDuty", _
+            "txtPhone", "txtEducation", "txtBirthDate", _
+            "txtBirthPlace", "txtResume")
+        With lstData
+            j = .ListIndex
+            If j <= 0 Then Exit Sub
+            For i = 0 To grsADO.Fields.Count - 1
+                 frmModifyorAddRecord.Controls(avntTxtName(i)).Text = .List(j, i)
+            Next i
+        End With
+    End If
+    Me.Hide
+    frmModifyorAddRecord.Show
+End Sub
+
+'------------ frmStaffingPhotoSystem ------------
+Dim mcnADO As ADODB.Connection
+Dim mrsADOPic As ADODB.Recordset
+Dim mstrTable As String
+Dim mobjDicPic As Object
+Private Type mudtGUID
+  lngData As Long
+  intData1 As Integer
+  intData2 As Integer
+  abytData(7) As Byte
+End Type
+Private Declare Function CreateStreamOnHGlobal Lib "ole32.dll" (ByRef hGlobal As Any, ByVal fDeleteOnResume As Long, ByRef ppstr As Any) As Long
+Private Declare Function OleLoadPicture Lib "olepro32.dll" (ByVal lpStream As IUnknown, ByVal lSize As Long, ByVal fRunmode As Long, ByRef riid As mudtGUID, ByRef lplpObj As Any) As Long
+Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpsz As Long, ByRef pclsid As mudtGUID) As Long
+Private Const SIPICTURE As String = "{7BF80980-BF32-101A-8BBB-00AA00300CAB}"
+
+Private Sub UserForm_Initialize()
+    Dim strSQL As String
+    Dim strPath As String
+    Dim avntData As Variant
+    Dim i As Long
+    Set mobjDicPic = CreateObject("scripting.dictionary")
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    mstrTable = "?çHûÉàƒ"
+    Set mcnADO = New ADODB.Connection
+    mcnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT ?çH?çÜ FROM " & mstrTable
+    Set mrsADOPic = New ADODB.Recordset
+    mrsADOPic.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    avntData = mrsADOPic.GetRows
+    For i = 0 To UBound(avntData, 2)
+        mobjDicPic(CStr(avntData(0, i))) = i
+    Next i
+    mrsADOPic.Close
+    Set mrsADOPic = Nothing
+    imgPic.Visible = True
+    lblPic.Visible = False
+End Sub
+
+Private Sub cmdBatchSavePhotos_Click() 'î·ó ç›êîêò?íÜë∂?è∆ï–
+    Dim abytInfo() As Byte
+    Dim strPicPath As String
+    Dim strPicName As String
+    Dim strFldPath As String
+    Dim strSQL As String
+    Dim intFn As Integer
+    Dim rsADO As New ADODB.Recordset
+    Dim strPath As String
+    Dim lngPicSum As Long
+    strPath = ThisWorkbook.Path & "\?çHä«óù.accdb"
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        .Title = "??è∆ï–èäç›ï∂åè?"
+        .InitialFileName = ThisWorkbook.Path & "\"
+        .Show
+        If .SelectedItems.Count = 0 Then Exit Sub
+        strFldPath = .SelectedItems(1) & "\"
+    End With
+    On Error GoTo ErrMsg
+    strSQL = "SELECT ?çH?çÜ,è∆ï– FROM " & mstrTable & " WHERE ISNULL(è∆ï–)= TRUE"
+    rsADO.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    Do Until rsADO.EOF
+        strPicName = rsADO(0)
+        strPicPath = Dir(strFldPath & strPicName & ".*")
+        If Len(strPicPath) <> 0 Then
+            strPicPath = strFldPath & strPicPath
+            intFn = FreeFile
+            Open strPicPath For Binary As #intFn
+            ReDim abytInfo(LOF(intFn) - 1)
+            Get #intFn, , abytInfo
+            Close #intFn
+            rsADO("è∆ï–") = abytInfo
+            rsADO.Update
+            lngPicSum = lngPicSum + 1
+        End If
+        rsADO.MoveNext
+    Loop
+    MsgBox "ã§óL " & lngPicSum & " ?è∆ï–ë∂ì¸êîêò?" & vbCr _
+    & "?óL " & rsADO.RecordCount - lngPicSum & " êlñ¢íÒãüè∆ï–", , "ï€ë∂è∆ï–"
+    rsADO.Close
+    Set rsADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Private Sub cmdDisplayPhoto_Click() '?é¶è∆ï–
+    Dim abytInfo() As Byte
+    Dim strSQL As String
+    If txtEmployeeID.Text = "" Then Exit Sub
+    'On Error GoTo ErrMsg
+    strSQL = "Select è∆ï– FROM " & mstrTable & " WHERE ?çH?çÜ=" & txtEmployeeID.Text
+    Set mrsADOPic = New ADODB.Recordset
+    mrsADOPic.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    If Not mrsADOPic.EOF Then
+        If Not IsNull(mrsADOPic("è∆ï–")) Then
+            abytInfo = mrsADOPic("è∆ï–")
+            lblPic.Visible = False
+            imgPic.Visible = True
+            imgPic.Picture = ByteToPicture(abytInfo)
+            imgPic.PictureAlignment = fmPictureAlignmentCenter
+            imgPic.PictureSizeMode = fmPictureSizeModeStretch
+            Me.MousePointer = fmMousePointerDefault
+        Else
+            imgPic.Picture = LoadPicture("")
+            imgPic.Visible = False
+            lblPic.Visible = True
+        End If
+    Else
+        MsgBox txtEmployeeID.Text & " ?çÜïsë∂ç›ÅC?èdêV?ì¸", , "?çÜ??"
+    End If
+    mrsADOPic.Close
+    Set mrsADOPic = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Private Sub cmdDeletePhoto_Click() '?èúè∆ï–
+    Dim strSQL As String
+    If txtEmployeeID.Text = "" Then Exit Sub
+    On Error GoTo ErrMsg
+    strSQL = "Select è∆ï– From " & mstrTable _
+        & " WHERE ?çH?çÜ=" & txtEmployeeID.Text
+    Set mrsADOPic = New ADODB.Recordset
+    mrsADOPic.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    If Not mrsADOPic.EOF Then
+        If Not IsNull(mrsADOPic("è∆ï–")) Then
+            strSQL = "UPDATE " & mstrTable _
+                & " SET è∆ï–=null WHERE ?çH?çÜ=" & txtEmployeeID.Text
+            mcnADO.Execute strSQL
+        End If
+        imgPic.Picture = LoadPicture("")
+        imgPic.Visible = False
+        lblPic.Visible = True
+    Else
+        MsgBox txtEmployeeID.Text & _
+            " ?çÜïsë∂ç›ÅC?èdêV?ì¸", , "?çÜ??"
+    End If
+    mrsADOPic.Close
+    Set mrsADOPic = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub DataShow()
+    Dim abytInfo() As Byte
+    If Not IsNull(mrsADOPic("è∆ï–")) Then
+        abytInfo = mrsADOPic("è∆ï–")
+        lblPic.Visible = False
+        imgPic.Visible = True
+        imgPic.Picture = ByteToPicture(abytInfo)
+        imgPic.PictureAlignment = fmPictureAlignmentCenter
+        imgPic.PictureSizeMode = fmPictureSizeModeStretch
+        Me.MousePointer = fmMousePointerDefault
+    Else
+        imgPic.Picture = LoadPicture("")
+        imgPic.Visible = False
+        lblPic.Visible = True
+    End If
+    txtEmployeeID.Text = mrsADOPic("?çH?çÜ")
+End Sub
+
+
+
+Private Sub cmdSavePhoto_Click() 'ï€ë∂è∆ï–
+    Dim abytInfo() As Byte
+    Dim strPicPath As String
+    Dim strFileName As Variant
+    Dim strSQL As String
+    Dim intFn As Integer
+    If txtEmployeeID.Text = "" Then Exit Sub
+    On Error GoTo ErrMsg
+    strSQL = "SELECT ?çH?çÜ,è∆ï– FROM " & mstrTable _
+        & " WHERE ?çH?çÜ=" & txtEmployeeID.Text
+    Set mrsADOPic = New ADODB.Recordset
+    mrsADOPic.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    If mrsADOPic.RecordCount Then
+        strFileName = Application.GetOpenFilename( _
+            "?ï–ï∂åè(*.bmp;*.jpg;*.gif),* bmp;*.jpg;*.gif")
+        If strFileName <> False Then
+            intFn = FreeFile
+            Open strFileName For Binary As #intFn
+            ReDim abytInfo(LOF(intFn) - 1)
+            Get #intFn, , abytInfo
+            Close #intFn
+            mrsADOPic("è∆ï–") = abytInfo
+            mrsADOPic.Update
+            Call cmdDisplayPhoto_Click
+            MsgBox "õﬂè´è∆ï–ï€ë∂ìûêîêò?ÅB", vbInformation
+        End If
+    Else
+        MsgBox "êîêò?íÜñvóL?çÜ?" & txtEmployeeID.Text & "ìI??ÅI"
+    End If
+    Set mrsADOPic = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub setrsADO(ByRef rsADO As ADODB.Recordset)
+    Dim strSQL As String
+    mstrTable = "?çHûÉàƒ"
+    strSQL = "SELECT ?çH?çÜ,è∆ï– FROM " & mstrTable
+    Set rsADO = New ADODB.Recordset
+    rsADO.Open strSQL, mcnADO, adOpenKeyset, adLockOptimistic
+    If mobjDicPic.Exists(txtEmployeeID.Text) Then rsADO.Move mobjDicPic(txtEmployeeID.Text)
+End Sub
+
+Private Sub cmdFirstPhoto_Click() 'ëÊàÍò¢è∆ï–
+    If mrsADOPic Is Nothing Then Call setrsADO(mrsADOPic)
+    If mrsADOPic.BOF And mrsADOPic.EOF Then Exit Sub
+    If mrsADOPic.BOF Then Exit Sub
+    mrsADOPic.MoveFirst
+    If mrsADOPic.BOF Then Exit Sub
+    Call DataShow
+End Sub
+
+Private Sub cmdPreviousPhoto_Click() 'è„àÍò¢è∆ï–
+    Dim blnNum As Boolean
+    If mrsADOPic Is Nothing Then
+        Call setrsADO(mrsADOPic)
+        If Not mobjDicPic.Exists(txtEmployeeID.Text) Then blnNum = True
+    End If
+    If mrsADOPic.AbsolutePosition <= 1 Then Exit Sub
+    If mrsADOPic.BOF And mrsADOPic.EOF Then Exit Sub
+    If mrsADOPic.BOF Then Exit Sub
+    If Not blnNum Then mrsADOPic.MovePrevious
+    If mrsADOPic.BOF Then Exit Sub
+    Call DataShow
+End Sub
+
+Private Sub cmdNextPhoto_Click() 'â∫àÍò¢è∆ï–
+    Dim blnNum As Boolean
+    If mrsADOPic Is Nothing Then
+        Call setrsADO(mrsADOPic)
+        If Not mobjDicPic.Exists(txtEmployeeID.Text) Then blnNum = True
+    End If
+    If mrsADOPic.BOF And mrsADOPic.EOF Then Exit Sub
+    If mrsADOPic.AbsolutePosition = mrsADOPic.RecordCount Then Exit Sub
+    If mrsADOPic.EOF Then Exit Sub
+    If Not blnNum Then mrsADOPic.MoveNext
+    If mrsADOPic.EOF Then Exit Sub
+    Call DataShow
+End Sub
+
+Private Sub cmdLastPhoto_Click() 'ç≈ç@àÍò¢è∆ï–
+    If mrsADOPic Is Nothing Then Call setrsADO(mrsADOPic)
+    If mrsADOPic.BOF And mrsADOPic.EOF Then Exit Sub
+    If mrsADOPic.EOF Then Exit Sub
+    mrsADOPic.MoveLast
+    If mrsADOPic.EOF Then Exit Sub
+    Call DataShow
+End Sub
+
+Private Sub cmdCancel_Click() 'ëﬁèo‚xëÃ
+    Unload Me
+End Sub
+
+Private Function ByteToPicture(ByRef abytData() As Byte) As IPicture
+    Dim objStrm As IUnknown
+    Dim avntGuid As mudtGUID
+    If Not CreateStreamOnHGlobal(abytData(LBound(abytData)), False, objStrm) Then
+        CLSIDFromString StrPtr(SIPICTURE), avntGuid
+        OleLoadPicture objStrm, UBound(abytData) - LBound(abytData) + 1, False, avntGuid, ByteToPicture
+    End If
+    Set objStrm = Nothing
+End Function
+
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer) 'ëﬁèo‚xëÃ??ï˙ì‡ë∂
+    On Error Resume Next
+    mcnADO.Close
+    Set mcnADO = Nothing
+End Sub
+
+'-------------- frmModifyorAddRecord --------------
+Private Sub UserForm_Initialize()
+    txtResume.MultiLine = True 'ï∂ñ{ûyëΩçs
+    txtResume.EnterKeyBehavior = True 'ï∂ñ{ûyê⁄éÛâÒ??
+End Sub
+
+
+Private Sub cmdOk_Click() 'êîêò?íÜñvóL??çH?çÜ?ìYâ¡ÅCî€?èCâ¸
+    Dim rsNewADO As New ADODB.Recordset
+    Dim strMsg As String
+    Dim strSQL As String
+    Dim i As Integer
+    Dim lngNum As Long
+    Dim avntTxtName As Variant
+    avntTxtName = Array("txtNum", "txtName", "txtSex", _
+        "txtNation", "txtSection", "txtDuty", _
+        "txtPhone", "txtEducation", _
+        "txtBirthDate", "txtBirthPlace", "txtResume")
+    For i = 0 To 8
+        If i < 5 Or i = 8 Then
+            If Me.Controls(avntTxtName(i)).Text = "" Then
+                MsgBox grsADO.Fields(i).Name & "ïsî\?ãÛÅI", _
+                    vbInformation, "èCâ¸??"
+                Exit Sub
+            End If
+        End If
+    Next i
+    strSQL = "SELECT * FROM " & gstrTable & _
+        " WHERE ?çH?çÜ=" & txtNum.Text
+    rsNewADO.Open strSQL, gcnADO, adOpenKeyset, adLockOptimistic
+    If rsNewADO.RecordCount = 0 Then
+        rsNewADO.AddNew
+        For i = 0 To rsNewADO.Fields.Count - 2
+            rsNewADO.Fields(i) = Me.Controls(avntTxtName(i)).Text
+        Next i
+        rsNewADO.Update
+        With frmStaffingSystem.lstData
+            lngNum = .ListCount
+            .AddItem
+            For i = 0 To rsNewADO.Fields.Count - 2
+                .List(lngNum, i) = Me.Controls(avntTxtName(i)).Text
+            Next i
+        End With
+        strMsg = "êîêòìYâ¡ìûêîêò?ÅB"
+    Else
+        For i = 0 To rsNewADO.Fields.Count - 2
+            rsNewADO.Fields(i) = Me.Controls(avntTxtName(i)).Text
+        Next i
+        rsNewADO.Update
+        With frmStaffingSystem.lstData
+            lngNum = .ListIndex
+            If lngNum > 0 Then
+                If .List(lngNum, 0) = txtNum.Text Then
+                    For i = 0 To rsNewADO.Fields.Count - 2
+                        .List(lngNum, i) = Me.Controls(avntTxtName(i)).Text
+                    Next i
+                End If
+            End If
+        End With
+        strMsg = "???õﬂèCâ¸ÅB"
+    End If
+    MsgBox strMsg, vbInformation, "íÒé¶"
+    rsNewADO.Close
+    Set rsNewADO = Nothing
+    Unload Me
+    frmStaffingSystem.Show
+End Sub
+
+Private Sub cmdCancel_Click() 'éÊè¡‚xëÃ,ï‘âÒUserForm1
+    Unload Me
+    frmStaffingSystem.Show
+End Sub
+

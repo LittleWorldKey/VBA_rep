@@ -1,0 +1,281 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'------------- mdlDeleteExistRecords -------------
+Sub DeleteExistRecords()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath
+    strWhere = " WHERE EXISTS(" _
+        & "SELECT * FROM [Excel 12.0;Database=" _
+        & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+        & Range("a1").CurrentRegion.Address(0, 0) & "] " _
+        & "WHERE ?工?号=" & strTable & ".?工?号)"
+    strSQL = "SELECT ?工?号 FROM ?工档案" & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE FROM ?工档案" & strWhere
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub DeleteExistRecordsByIN() 'IN ?除工作表存在的??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strWhere = " WHERE ?工?号 IN (SELECT ?工?号 FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+        & Range("a1").CurrentRegion.Address(0, 0) & "])"
+    strSQL = "SELECT ?工?号 FROM ?工档案" & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE FROM ?工档案" & strWhere
+        [m1] = strSQL
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub DeleteExistRecordsByInner() '内?接  ?除工作表存在的??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strWhere = strTable & " A,[Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "] B WHERE A.?工?号=B.?工?号"
+    strSQL = "SELECT B.?工?号 FROM " & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE A.* FROM " & strWhere
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub DeleteExistRecordsByLeftOut() '左外?接?除数据表存在,工作表不存在的??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strWhere = strTable & " A LEFT JOIN  [Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" & Range("A1").CurrentRegion.Address(0, 0) _
+        & "] B ON A.?工?号=B.?工?号 WHERE B.?工?号 IS NULL"
+    strSQL = "SELECT A.?工?号 FROM " & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE A.* FROM " & strWhere
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+Sub DeleteNotexistRecords() 'NOT EXISTS?除数据表存在,工作表不存在的??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strWhere = " WHERE NOT EXISTS(SELECT * FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & "].[" & ActiveSheet.Name & "$" _
+        & Range("a1").CurrentRegion.Address(0, 0) & "] WHERE ?工?号=" & strTable & ".?工?号)"
+    strSQL = "SELECT ?工?号 FROM ?工档案" & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+        If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE FROM ?工档案" & strWhere
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+Sub DeleteRetirementRecords() '?除退休?工(前个月男?到60?，女?到55?)
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strWhere As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    strWhere = " WHERE (性?='男' AND 出生日期<#" & DateSerial(Year(Date) - 60, Month(Date), 1) & "#) OR (性?='女' AND 出生日期<=#" & DateSerial(Year(Date) - 55, Month(Date), 1) & "#)"
+    strSQL = "SELECT ?工?号 FROM ?工档案" & strWhere
+    rsADO.Open strSQL, cnADO, 1, 3
+        If rsADO.RecordCount > 0 Then
+        strSQL = "DELETE FROM ?工档案" & strWhere
+        [L1] = strSQL
+        cnADO.Execute strSQL
+        MsgBox rsADO.RecordCount & "条??被?除。", vbInformation, "提示"
+    Else
+        MsgBox "没有??需要?除的??。", vbInformation, "提示"
+    End If
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''下面程序上?数据用
+Sub UpdateaddRecords() '更新数据?已?存在??，插入不存在??
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strTemp As String
+    Dim strSQL As String
+    Dim strMsg As String
+    Dim arrFields As Variant
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    cnADO.Open "Provider=Microsoft.Ace.OLEDB.12.0;Data Source=" & strPath '?接数据?
+    
+'    生成更新SQL?句(?注意Office2007后需要加IMEX=0参数)
+    strSQL = "SELECT B.?工?号 FROM " & strTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+        & Range("A1").CurrentRegion.Address(0, 0) & "] B WHERE A.?工?号=B.?工?号"
+    rsADO.Open strSQL, cnADO, 1, 3
+    If rsADO.RecordCount > 0 Then
+        arrFields = Range("A1:K1") '工作表中的字段名写入数?
+    '    生成更新字符串，如：a.姓名=b.姓名,a.性?=b.性?,……
+        For i = 2 To UBound(arrFields, 2)
+            strTemp = strTemp & ",a." & arrFields(1, i) & "=b." & arrFields(1, i)
+        Next
+        strSQL = "UPDATE " & strTable & " A,[Excel 12.0;IMEX=0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" _
+            & Range("A1").CurrentRegion.Address(0, 0) & "] B SET " & Mid(strTemp, 2) & " WHERE A.?工?号=B.?工?号"
+        cnADO.Execute strSQL
+        strMsg = rsADO.RecordCount & "条??已更新！"
+    End If
+    If rsADO.RecordCount < Range("A" & Rows.Count).End(xlUp).Row - 1 Then
+    '    生成数据?不存在??的SQL?句
+        strSQL = " SELECT A.* FROM [Excel 12.0;Database=" & ThisWorkbook.FullName & ";].[" & ActiveSheet.Name & "$" & Range("A1").CurrentRegion.Address(0, 0) _
+            & "] A LEFT JOIN " & strTable & " B ON A.?工?号=B.?工?号 WHERE B.?工?号 IS NULL"
+        Set rsADO = CreateObject("ADODB.Recordset")
+        rsADO.Open strSQL, cnADO, 1, 3
+        '插入数据?不存在??
+        If rsADO.RecordCount > 0 Then '如果工作表中含有数据?不存在??
+            strSQL = "INSERT INTO " & strTable & strSQL
+            cnADO.Execute strSQL
+            strMsg = strMsg & vbCrLf & rsADO.RecordCount & "条??已添加到数据?！"
+        End If
+    End If
+    MsgBox strMsg, vbInformation, "提示"
+
+'    ???接?放内存
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
+
+
+
+
+

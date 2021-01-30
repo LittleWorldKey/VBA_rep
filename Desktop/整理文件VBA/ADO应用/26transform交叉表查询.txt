@@ -1,0 +1,71 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'---------------- mdlADOTransForm ----------------
+Sub ADOTransForm()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "TRANSFORM SUM(?售?) " _
+        & "SELECT 姓名,SUM(?售?) AS 合? " _
+        & "FROM [数据表$] " _
+        & "GROUP BY 姓名 " _
+        & "PIVOT FORMAT(日期,'mm月')"
+    rsADO.Open strSQL, cnADO, 1, 3
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+Sub ADOTransForm2()
+    Dim cnADO As Object
+    Dim rsADO As Object
+    Dim strSQL As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Recordset")
+    ' ?接数据?的?接字符串,不???方式也可以?接EXCEL文件
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "TRANSFORM SUM(?售?) " _
+        & "SELECT 姓名,SUM(?售?) AS 合? " _
+        & "FROM [数据表$] " _
+        & "GROUP BY 姓名 " _
+        & "PIVOT FORMAT(日期,'mm月') IN('04月','05月')"
+    rsADO.Open strSQL, cnADO, 1, 3
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+        Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set rsADO = Nothing
+    Set cnADO = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+

@@ -1,0 +1,72 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'-------------- mdlAggregationData --------------
+Sub AggregationData()
+     Dim cnADO As Object
+     Dim strSQL As String
+     Set cnADO = CreateObject("ADODB.Connection")
+     cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+     strSQL = "SELECT SUM(?分) ,COUNT(姓名)  FROM [成?$] " _
+        & "WHERE 班?='1班'"
+     Cells.ClearContents
+     Range("A1:B1") = Array("1班?分", "人数")
+     Range("A2").CopyFromRecordset cnADO.Execute(strSQL)
+     cnADO.Close
+     Set cnADO = Nothing
+End Sub
+
+Sub AggregationGroupData()
+    Dim cnADO As Object
+    Dim strSQL As String
+    Dim rsADO As Object
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Connection")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT 班?,SUM(?分) AS ?分 ,COUNT(姓名) AS 人数 " _
+        & "FROM [成?$] GROUP BY 班?"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+       Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set cnADO = Nothing
+    Set rsADO = Nothing
+End Sub
+
+Sub AggregationData3()
+    Dim cnADO As Object
+    Dim strSQL As String
+    Dim rsADO As Object
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    Set rsADO = CreateObject("ADODB.Connection")
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties=Excel 12.0;" _
+        & "Data Source=" & ThisWorkbook.FullName
+    strSQL = "SELECT 班?,SUM(?分) AS ?分 ,COUNT(姓名) AS 人数  " _
+        & "FROM [成?$] GROUP BY 班? HAVING COUNT(姓名)>20"
+    Set rsADO = cnADO.Execute(strSQL)
+    Cells.ClearContents
+    For i = 0 To rsADO.Fields.Count - 1
+       Cells(1, i + 1) = rsADO.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset rsADO
+    rsADO.Close
+    cnADO.Close
+    Set cnADO = Nothing
+    Set rsADO = Nothing
+End Sub
+

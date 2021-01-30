@@ -1,0 +1,82 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       ÅsExcel VBA ?ìTë„??ópëÂëSÅt        --
+'--     ExceHome ?íòèoî≈ ISBN:9787301300954    --
+'--                  ??é¶ó·                   --
+'-------------------------------------------------
+
+'----------- mdlADOForTxtWithDelimited -----------
+Sub ADOForTxt()
+    Dim objCN As Object
+    Dim objRS As Object
+    Dim strSQL As String
+    Dim i As Integer
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    Set objRS = CreateObject("ADODB.Recordset")
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties='text;HDR=Yes;FMT=Delimited';" _
+        & "Data Source = " & ThisWorkbook.Path
+    strSQL = "SELECT * FROM ïîï™?çH?óø.txt"
+    Columns("A:D").ClearContents
+    objRS.Open strSQL, objCN, 1, 3
+    For i = 0 To objRS.Fields.Count - 1
+        Cells(1, i + 1) = objRS.Fields(i).Name
+    Next i
+    Range("A2").CopyFromRecordset objRS
+    objRS.Close
+    objCN.Close
+    Set objRS = Nothing
+    Set objCN = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub ADOForTxtWithFixed()
+    Dim objCN As Object
+    Dim strSQL As String
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties='text;HDR=No;FMT=Fixed';" _
+        & "Data Source=" & ThisWorkbook.Path
+    strSQL = "SELECT * FROM ïîï™?çH?óøB.txt"
+    Columns("A:D").ClearContents
+    Range("A1:D1") = Array("?çH?çÜ", "ê©ñº", "ê´?", "èoê∂ì˙ä˙")
+    Range("A2").CopyFromRecordset objCN.Execute(strSQL)
+    objCN.Close
+    Set objCN = Nothing
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+
+Sub ADOForTxtWithFixed_1()
+    Dim objCN As Object
+    Dim strSQL As String
+    On Error GoTo ErrMsg
+    Set objCN = CreateObject("ADODB.Connection")
+    Open ThisWorkbook.Path & "\schema.ini" For Output As #1
+    Print #1, "[ïîï™?çH?óøB.txt]" & vbCrLf & "COLNAMEHEADER = False" _
+        & vbCrLf & "Format = FixedLength" & vbCrLf _
+        & "COL1=""?çH?çÜ"" long Width 6" _
+        & vbCrLf & "COL2=""ê©ñº"" Text Width 6" _
+        & vbCrLf & "COL3=""ê´?"" Text Width 2" _
+        & vbCrLf & "COL4=""èoê∂ì˙ä˙"" DateTime Width 10"
+    Close #1
+    objCN.Open "Provider=Microsoft.ACE.OLEDB.12.0;" _
+        & "Extended Properties='text;HDR=No;FMT=Fixed';" _
+        & "Data Source=" & ThisWorkbook.Path
+    strSQL = "SELECT * FROM ïîï™?çH?óøB.txt"
+    Columns("A:D").ClearContents
+    Range("A1:D1") = Array("?çH?çÜ", "ê©ñº", "ê´?", "èoê∂ì˙ä˙")
+    Range("A2").CopyFromRecordset objCN.Execute(strSQL)
+    objCN.Close
+    Set objCN = Nothing
+'    Kill ThisWorkbook.Path & "\schema.ini"
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???çê"
+End Sub
+

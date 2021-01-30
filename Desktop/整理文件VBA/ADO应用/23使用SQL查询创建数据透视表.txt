@@ -1,0 +1,53 @@
+'-------------------------------------------------
+'--     ***  ExcelHome CopyRight(c)2018  ***    --
+'--       《Excel VBA ?典代??用大全》        --
+'--     ExceHome ?著出版 ISBN:9787301300954    --
+'--                  ??示例                   --
+'-------------------------------------------------
+
+'-------------- mdlCreatePivotTable --------------
+Sub CreatePivotTable()
+    Dim cnADO As Object
+    Dim strPath As String
+    Dim strTable As String
+    Dim strSQL As String
+    Dim objPivotCache As PivotCache
+    Dim i As Long
+    Set cnADO = CreateObject("ADODB.Connection")
+    strPath = ThisWorkbook.Path & "\?工管理.accdb"
+    strTable = "?工档案"
+    On Error GoTo ErrMsg
+    Application.ScreenUpdating = False
+    cnADO.Open "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" & strPath
+    strSQL = "SELECT 部?,??,'年?段' AS 大?," _
+        & "Partition(DATEDIFF('YYYY',出生日期,DATE()),20,59,10) as ?分,姓名 " _
+        & "FROM " & strTable _
+        & " Union ALL SELECT 部?,??,'学?',学?,姓名 FROM " & strTable
+    Cells.Clear
+    Set objPivotCache = ActiveWorkbook.PivotCaches.Create(SourceType:=xlExternal)
+    Set objPivotCache.Recordset = cnADO.Execute(strSQL)
+    objPivotCache.CreatePivotTable TableDestination:=Range("A3"), TableName:="数据透?表1"
+    With ActiveSheet.PivotTables("数据透?表1")
+        .PivotFields("部?").Orientation = xlRowField
+        .PivotFields("部?").Position = 1
+        .PivotFields("??").Orientation = xlRowField
+        .PivotFields("??").Position = 2
+        .PivotFields("大?").Orientation = xlColumnField
+        .PivotFields("大?").Position = 1
+        .PivotFields("?分").Orientation = xlColumnField
+        .PivotFields("?分").Position = 2
+        .AddDataField ActiveSheet.PivotTables("数据透?表1").PivotFields("姓名"), "?工人数", xlCount
+        .RowAxisLayout xlTabularRow
+        .MergeLabels = True
+    End With
+    Range("A1").CurrentRegion.EntireColumn.AutoFit
+    Set objPivotCache = Nothing
+    cnADO.Close
+    Set cnADO = Nothing
+    Application.ScreenUpdating = True
+    Exit Sub
+ErrMsg:
+    MsgBox Err.Description, , "???告"
+End Sub
+
+
