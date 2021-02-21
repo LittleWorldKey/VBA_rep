@@ -1,0 +1,72 @@
+Sub Macro6()
+'
+' Macro6 Macro
+'
+'
+    Selection.InsertBefore "----- start -----" & vbCr
+    Selection.EndKey Unit:=wdLine, Extend:=wdExtend
+    Selection.Copy
+    Selection.MoveRight Unit:=wdCharacter, Count:=1
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1
+    Selection.TypeParagraph
+    Selection.PasteAndFormat (wdFormatOriginalFormatting)
+
+       
+    Selection.Copy
+    Selection.PasteAndFormat (wdFormatOriginalFormatting)
+    Selection.InsertAfter "----- end----" & vbCr
+End Sub
+
+
+
+
+Sub Macro6()
+'
+' Macro6 Macro
+'
+Selection.InsertBefore Text:="new text ----- start -----" & vbCr
+    
+    Selection.EndKey Unit:=wdLine, Extend:=wdExtend
+    Selection.Copy
+    Selection.MoveRight Unit:=wdCharacter, Count:=1
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1
+    Selection.TypeParagraph
+
+    Selection.InsertAfter Text:="new text----- end----" & vbCr
+    
+
+End Sub
+
+
+
+
+Sub Macro12()
+'
+' Macro12 Macro
+'
+'
+    Selection.EndKey Unit:=wdLine, Extend:=wdExtend
+    Selection.Copy
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1
+    Selection.MoveRight Unit:=wdCharacter, Count:=13
+    Selection.EndKey Unit:=wdLine
+    Selection.TypeParagraph
+    Selection.PasteAndFormat (wdFormatOriginalFormatting)
+    Selection.TypeBackspace
+    Selection.MoveUp Unit:=wdLine, Count:=1
+    Selection.MoveLeft Unit:=wdCharacter, Count:=1
+    Selection.MoveRight Unit:=wdCharacter, Count:=1
+    Selection.HomeKey Unit:=wdLine
+    Selection.TypeParagraph
+    Selection.MoveUp Unit:=wdLine, Count:=1
+    Selection.TypeText Text:="************************"
+    Selection.MoveLeft Unit:=wdCharacter, Count:=11
+    Selection.TypeText Text:="start"
+    Selection.MoveRight Unit:=wdCharacter, Count:=12
+    Selection.MoveDown Unit:=wdLine, Count:=1
+    Selection.EndKey Unit:=wdLine
+    Selection.TypeParagraph
+    Selection.TypeText Text:="***********************************"
+    Selection.MoveLeft Unit:=wdCharacter, Count:=18
+    Selection.TypeText Text:="end"
+End Sub
